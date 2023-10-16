@@ -1,0 +1,104 @@
+---
+title: "Data Science for Industry: Assignment 1"
+author: "Kenneth Ssekimpi"
+student_number: "SSKKEN001"
+assignment: "Assignment 1"
+format: pdf
+editor: visual
+embed-resources: true
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_knit$set(root.dir = "C:/Users/User/OneDrive/Documents/School/2023/Masters/STA5073Z/Assignments/Assignment 1/ds4l-assignment-1/data/")
+
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, fig.pos = "H", out.extra = "")
+```
+
+```{r}
+# Clear global environment
+rm(list=ls())
+
+# Libraries we need
+libs <- c('dplyr', 'ggplot2', 'lubridate', 'purrr', 'reshape2', 'text2vec', 'tidyr', 'tidytext', 'topicmodels', 'tm', 'wordcloud')
+
+# Install missing libraries
+installed_libs <- libs %in% rownames(installed.packages())
+if (any(installed_libs == FALSE)) {
+  install.packages(libs[!installed_libs], repos='http://cran.us.r-project.org')
+}
+
+# Load libraries
+invisible(lapply(libs, library, character.only = TRUE))
+```
+
+```{r}
+unzip("sona-addresses-1994-2023.zip")
+```
+
+```{r}
+# Get a list of all text files in the directory
+text_files <- list.files(pattern = ".txt")
+
+# Initialize an empty list to store the data
+speech_data <- list()
+
+# Loop through the list of text files and read them into R
+for (file in text_files) {
+  speech <- readLines(file, warn = FALSE)
+  speech_data[[file]] <- speech
+}
+
+```
+
+```{r wrangling}
+#data wrangling 
+speech_tibble <- tibble(speech = speech_data)
+speech_tibble <- speech_tibble %>%
+  separate(speech, into = c("day", "month" , "year","content"), sep = " ",fill= "right", extra = "merge")
+
+speech_tibble <- speech_tibble %>%
+  mutate(
+    content = tolower(content),
+    content = gsub("\\d", "", content),
+    content = gsub("[^[:alnum:]']", " ", content),
+    content = gsub("[^[:alnum:]']", " ", content),
+    day = gsub("[c(,'’\"]", "", day),
+    year = gsub("[,'’\"]", "", year)
+  ) %>% unite("Date", day:month:year, remove = TRUE, sep = " ")
+
+speech_tibble$Date[35]<- "10 February 2022"
+speech_tibble$Date[36]<- "9 February 2022"
+speech_tibble$Date<- dmy(speech_tibble$Date)
+
+# Assuming you have already loaded the 'lubridate' package
+speech_tibble <- speech_tibble %>%
+  mutate(
+    President = case_when(
+      Date == ymd("1994-02-28") ~ "F.W. de Klerk",
+      Date > ymd("1994-02-28") & Date < ymd("1999-06-14") ~ "Nelson Mandela",
+      Date >= ymd("1999-06-14") & Date < ymd("2008-09-24") ~ "Thabo Mbeki",
+      Date >= ymd("2008-09-24") & Date <= ymd("2009-05-09") ~ "Kgalema Motlanthe",
+      Date >= ymd("2009-05-09") & Date <= ymd("2018-02-14") ~ "Jacob Zuma",
+      TRUE ~ "Cyril Ramaphosa"
+    )
+  )
+
+speech_tokens <- speech_tibble %>%
+  unnest_tokens(word, content) %>%
+  anti_join(stop_words)
+
+words_to_remove <- c("government", "South Africa", "national",
+                     "country", "south", "africa", "honourable", 
+                     "people")
+
+speech_tokens <- speech_tokens %>%
+  filter(!word %in% words_to_remove)
+
+
+load("dsfi-lexicons.Rdata")
+
+```
+
+```         
+```
