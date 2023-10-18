@@ -1,26 +1,31 @@
 ---
-title: "Data Science for Industry: Assignment 1"
+title: "Predict the President (Neural Networks)"
 author: "Kenneth Ssekimpi"
 student_number: "SSKKEN001"
 assignment: "Assignment 1"
-format: pdf
+format: html
 editor: visual
 embed-resources: true
+fonts: Times New Roman
+bibliography: references.bib
+execute:
+  echo: false
+  warning: false
 ---
 
 ```{r setup, include=FALSE}
 
-knitr::opts_knit$set(root.dir = "C:/Users/User/OneDrive/Documents/School/2023/Masters/STA5073Z/Assignments/Assignment 1/ds4l-assignment-1/data/")
+knitr::opts_knit$set(root.dir = "C:/Users/User/OneDrive/Documents/School/2023/Masters/STA5073Z/Assignments/Assignment 1/ds4l-assignment-1/")
 
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, fig.pos = "H", out.extra = "")
+knitr::opts_chunk$set(fig.pos = "H", out.extra = "")
 ```
 
-```{r}
+```{r libraries}
 # Clear global environment
 rm(list=ls())
 
 # Libraries we need
-libs <- c('dplyr', 'ggplot2', 'lubridate', 'purrr', 'reshape2', 'text2vec', 'tidyr', 'tidytext', 'topicmodels', 'tm', 'wordcloud')
+libs <- c('dplyr', 'ggplot2', 'lubridate', 'keras', 'tm', 'quarto', 'readr', 'stringr', 'tidytext', 'tfhub')
 
 # Install missing libraries
 installed_libs <- libs %in% rownames(installed.packages())
@@ -30,75 +35,207 @@ if (any(installed_libs == FALSE)) {
 
 # Load libraries
 invisible(lapply(libs, library, character.only = TRUE))
+
+use_virtualenv("myenv", required = TRUE) 
 ```
 
 ```{r}
-unzip("sona-addresses-1994-2023.zip")
+unzip("sona-addresses-1994-2023.zip", exdir = "data")
 ```
 
-```{r}
+# Abstract
+
+# Introduction
+
+The State of the Nation Address (SONA) of the President of South Africa is an annual event in which the President reports on the status of the nation to a joint sitting of Parliament. SONA speeches are an important source of information on the South African government's priorities, challenges, and plans.
+
+In this paper, we conduct a
+
+Our work contributes to the understanding of the South African government's priorities, challenges, and plans over time. It also provides insights into the public discourse on these issues.
+
+```{r read_wrangle}
 # Get a list of all text files in the directory
-text_files <- list.files(pattern = ".txt")
+text_files <- list.files(path = "data", pattern = ".txt")
 
 # Initialize an empty list to store the data
-speech_data <- list()
+speech_data <- c()
+i = 0
+num_chars <- c(27050, 12786, 39019, 39524, 37489, 45247, 34674, 41225, 37552, 41719, 50544, 58284, 34590, 39232, 54635, 48643, 48641, 44907, 31101, 47157, 26384, 33281, 33376, 36006, 29403, 36233, 32860, 32464, 35981, 33290, 42112, 56960, 47910, 43352, 52972, 60000)
 
 # Loop through the list of text files and read them into R
 for (file in text_files) {
-  speech <- readLines(file, warn = FALSE)
-  speech_data[[file]] <- speech
+  i = i + 1
+  # speech <- readLines(file, warn = FALSE)
+  # Open the file for reading
+  file_handle <- file(paste("data/", file, sep = ""), "r")
+  speech <- readChar(file_handle, nchars = 60000)
+  # speech_data[[file]] <- speech
+  speech_data[i] <- speech
+  # Close the file
+  close(file_handle)
 }
 
-```
+sona <- data.frame(filename = text_files, speech = speech_data, stringsAsFactors = FALSE)
 
-```{r wrangling}
-#data wrangling 
-speech_tibble <- tibble(speech = speech_data)
-speech_tibble <- speech_tibble %>%
-  separate(speech, into = c("day", "month" , "year","content"), sep = " ",fill= "right", extra = "merge")
+# extract year and president for each speech
+sona$year <- str_sub(sona$filename, start = 1, end = 4)
+sona$president <- str_remove_all(str_extract(sona$filename, "[dA-Z].*\\."), "\\.")
 
-speech_tibble <- speech_tibble %>%
-  mutate(
-    content = tolower(content),
-    content = gsub("\\d", "", content),
-    content = gsub("[^[:alnum:]']", " ", content),
-    content = gsub("[^[:alnum:]']", " ", content),
-    day = gsub("[c(,'’\"]", "", day),
-    year = gsub("[,'’\"]", "", year)
-  ) %>% unite("Date", day:month:year, remove = TRUE, sep = " ")
+# clean the sona dataset by adding the date and removing unnecessary text
+replace_reg <- '(http.*?(\\s|.$))|(www.*?(\\s|.$))|&amp;|&lt;|&gt;|\n'
 
-speech_tibble$Date[35]<- "10 February 2022"
-speech_tibble$Date[36]<- "9 February 2022"
-speech_tibble$Date<- dmy(speech_tibble$Date)
-
-# Assuming you have already loaded the 'lubridate' package
-speech_tibble <- speech_tibble %>%
-  mutate(
-    President = case_when(
-      Date == ymd("1994-02-28") ~ "F.W. de Klerk",
-      Date > ymd("1994-02-28") & Date < ymd("1999-06-14") ~ "Nelson Mandela",
-      Date >= ymd("1999-06-14") & Date < ymd("2008-09-24") ~ "Thabo Mbeki",
-      Date >= ymd("2008-09-24") & Date <= ymd("2009-05-09") ~ "Kgalema Motlanthe",
-      Date >= ymd("2009-05-09") & Date <= ymd("2018-02-14") ~ "Jacob Zuma",
-      TRUE ~ "Cyril Ramaphosa"
-    )
+sona <-sona %>%
+  mutate(speech = str_replace_all(speech, replace_reg , ' ')
+         ,date = str_sub(speech, start=1, end=30)
+         ,date = str_replace_all(date, "February", "02")
+         ,date = str_replace_all(date, "June", "06")
+         ,date = str_replace_all(date, "Feb", "02")
+         ,date = str_replace_all(date, "May", "05")
+         ,date = str_replace_all(date, "Jun", "06")
+         ,date = str_replace_all(date, "Thursday, ","")
+         ,date = str_replace_all(date, ' ', '-')        
+         ,date = str_replace_all(date, "[A-z]",'')
+         ,date = str_replace_all(date, '-----', '')
+         ,date = str_replace_all(date, '----', '')
+         ,date = str_replace_all(date, '---', '')
+         ,date = str_replace_all(date, '--', '')
   )
 
-speech_tokens <- speech_tibble %>%
-  unnest_tokens(word, content) %>%
-  anti_join(stop_words)
+sona$date[36] <- "09-02-2023"
+sona$year[36] <- "2023"
+
+sona$date <- dmy(sona$date)
+```
+
+```{r preprocess}
+sona <- sona %>%
+  select(date, speech, year, president)
+
+sona_target <- as.integer(factor(sona$president)) - 1
+
+unnest_reg <- "[^A-Za-z_\\d#@']"
 
 words_to_remove <- c("government", "South Africa", "national",
                      "country", "south", "africa", "honourable", 
                      "people")
 
-speech_tokens <- speech_tokens %>%
-  filter(!word %in% words_to_remove)
+# sona_speeches <- 
+
+speech_tokens <- sona %>%
+  unnest_tokens(word, speech, token = "regex", pattern = unnest_reg) %>%
+  anti_join(stop_words)# %>%
+  # filter(!word %in% words_to_remove)
+
+
+
+#speech_tokens <- speech_tokens %>%
+#  filter(!word %in% words_to_remove)
 
 
 load("dsfi-lexicons.Rdata")
+```
+
+```{r}
+speech_tokens %>%
+  group_by(word) %>%
+  count() %>%
+  ungroup() %>% 
+  arrange(desc(n)) %>%
+  filter(rank(desc(n)) <= 10)
+```
+
+```{r}
+word_bag <- speech_tokens %>%
+  group_by(word) %>%
+  count() %>%
+  ungroup() %>%
+  top_n(200, wt = n) %>%
+  select(-n)
+```
+
+```{r}
+# Split the dataset into three subsets: training, validation, and test
+set.seed(1991)
+
+sona_features <- as.matrix(sona[,c('speech', 'date')])
+
+# Create a document-term matrix (DTM) and convert it to a TF-IDF representation
+dtm <- DocumentTermMatrix(Corpus(VectorSource(sona$word)))
+tfidf <- weightTfIdf(dtm)
+tfidf_matrix <- as.matrix(tfidf)
+
+# Assign labels as integers
+sona$leader <- as.integer(factor(sona$President))-1
+
+# Split the data into training and test sets
+set.seed(1991)
+sample_size <- floor(0.8 * nrow(sona))
+train_indices <- sample(seq_len(nrow(sona)), size = sample_size)
+
+x_train <- tfidf_matrix[train_indices, ]
+x_test <- tfidf_matrix[-train_indices, ]
+
+y_train <- to_categorical(sona$leader[train_indices], num_classes = max(sona$leader)+1)
+y_test <- to_categorical(sona$leader[-train_indices], num_classes = max(sona$leader)+1)
+
+training_indices <- sample(1:nrow(sona), 0.8 * nrow(sona), replace = FALSE)
+validation_indices <- setdiff(1:nrow(sona), training_indices)
+test_indices <- validation_indices[sample(1:length(validation_indices), 0.5 * length(validation_indices), replace = FALSE)]
+
+# Create the training, validation, and test datasets
+training_set <- sona[training_indices, ]
+validation_set <- sona[validation_indices, ]
+test_set <- sona[test_indices, ]
+
+
+
+# # Calculate the accuracy of the classifier on the validation set
+# validation_accuracy <- mean(predicted_labels == validation_set$president)
+# 
+# # Calculate the precision of the classifier on the validation set
+# validation_precision <- mean(predicted_labels[predicted_labels == 1] == validation_set$president[predicted_labels == 1])
+# 
+# # Calculate the recall of the classifier on the validation set
+# validation_recall <- mean(predicted_labels[predicted_labels == validation_set$president] == 1)
+# 
+# # Calculate the F1 score of the classifier on the validation set
+# validation_f1_score <- 2 * (validation_precision * validation_recall) / (validation_precision + validation_recall)
+
 
 ```
 
-```         
-```
+# Predict the President (Neural Networks)
+
+## Abstract
+
+This is a concise summary of our paper...
+
+## Keywords
+
+## Introduction
+
+This section provides more detailed background information on our topic...
+
+## Literature review
+
+...
+
+## Data and methods
+
+This section describes how we conducted our study...
+
+## Results
+
+This sections presents the results of our study...
+
+## Discussion
+
+This section interprets our results and discusses their implications...
+
+## Conclusion
+
+This section summarizes the main findings of our study and states the conclusions that can be drawn from the data...
+
+## References
+
+This section lists all of the sources that we cited in our paper...

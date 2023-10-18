@@ -1,3 +1,10 @@
+*.RData
+*.pdf
+*.Rproj
 *.txt
 *.docx
+*.gitignore
+uct_logo.png
 .Rproj.user
+
+/.quarto/
