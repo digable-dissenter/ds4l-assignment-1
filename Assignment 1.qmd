@@ -22,10 +22,10 @@ knitr::opts_chunk$set(fig.pos = "H", out.extra = "")
 
 ```{r libraries}
 # Clear global environment
-rm(list=ls())
+# rm(list=ls())
 
 # Libraries we need
-libs <- c('dplyr', 'ggplot2', 'lubridate', 'keras', 'tm', 'quarto', 'readr', 'stringr', 'tidytext', 'tfhub')
+libs <- c("caret", 'dplyr', "gbm", 'ggplot2', "kableExtra", 'keras', 'lubridate',  'quarto', "randomForest", 'readr', "rpart", 'stringr', "tensorflow", 'tfhub', 'tidytext', 'tm', 'topicmodels', 'wordcloud')
 
 # Install missing libraries
 installed_libs <- libs %in% rownames(installed.packages())
@@ -104,47 +104,36 @@ sona <-sona %>%
 sona$date[36] <- "09-02-2023"
 sona$year[36] <- "2023"
 
-sona$date <- dmy(sona$date)
+
 ```
 
 ```{r preprocess}
-sona <- sona %>%
-  select(date, speech, year, president)
 
- 
-ggplot(sona, aes(x = date, fill = president)) +
-  geom_histogram(position = "identity", bins = 20, show.legend = FALSE)  
-
+sona$date <- dmy(sona$date)
 # Assign labels as integers
 sona$prez_encoded <- as.integer(factor(sona$president))-1
 
-unnest_reg <- "[^A-Za-z_\\d#@']"
+sona <- sona %>%
+  select(date, speech, year, president, prez_encoded)
 
-#words_to_remove <- c("government", "South Africa", "national",
-#                     "country", "south", "africa", "honourable", 
-#                     "people")
+ggplot(sona, aes(x = date, fill = president)) +
+  geom_histogram(position = "identity", bins = 20, show.legend = FALSE)
 
-# sona_speeches <- 
-
-speech_tokens <- sona %>%
-  unnest_tokens(word, speech, token = "sentences", pattern = unnest_reg) # %>%
-  # anti_join(stop_words)# %>%
-  # filter(!word %in% words_to_remove)
-
-
-
-#speech_tokens <- speech_tokens %>%
-#  filter(!word %in% words_to_remove)
-
-
-# load("dsfi-lexicons.Rdata")
 ```
 
-```{r}
-# Split the dataset into three subsets: training, validation, and test
-set.seed(1991)
+```{r Bag_of_words}
 
-sona_features <- as.matrix(sona[,c('speech', 'date')])
+unnest_reg <- "[^A-Za-z_\\d#@']"
+replace_reg <- '(https?:.*?(\\s|.$))|(www.*?(\\s|.$))|&amp;|&lt;|&gt;'
+
+tidy_sentences <- sona %>%
+  mutate(speech, speech = str_replace_all(speech, "’", "'")) %>%  
+  mutate(speech = str_replace_all(speech, replace_reg, '')) %>%  
+  unnest_tokens(sentence, speech, token = 'sentences') %>%
+  filter(str_detect(sentence, '[a-z]')) %>%
+  mutate(Sentence_ID =  row_number())
+
+set.seed(1991)
 
 # Create a document-term matrix (DTM) and convert it to a TF-IDF representation
 dtm <- DocumentTermMatrix(Corpus(VectorSource(sona$word)))
@@ -153,7 +142,7 @@ tfidf_matrix <- as.matrix(tfidf)
 ```
 
 ```{r data_split}
-# Split the data into training and test sets
+# Split the dataset into three subsets: training, validation, and test
 set.seed(1991)
 sample_size <- floor(0.8 * nrow(sona))
 train_indices <- sample(seq_len(nrow(sona)), size = sample_size)

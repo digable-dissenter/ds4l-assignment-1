@@ -1,10 +1,15 @@
-*.RData
-*.pdf
-*.Rproj
+# dependencies
+/data
+/.quarto
+/.Rproj.user
+
+.gitignore
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.zip
 *.txt
 *.docx
-*.gitignore
-uct_logo.png
-.Rproj.user
-
-/.quarto/
+*.pdf
+*.png
