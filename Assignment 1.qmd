@@ -111,19 +111,24 @@ sona$date <- dmy(sona$date)
 sona <- sona %>%
   select(date, speech, year, president)
 
-sona_target <- as.integer(factor(sona$president)) - 1
+ 
+ggplot(sona, aes(x = date, fill = president)) +
+  geom_histogram(position = "identity", bins = 20, show.legend = FALSE)  
+
+# Assign labels as integers
+sona$prez_encoded <- as.integer(factor(sona$president))-1
 
 unnest_reg <- "[^A-Za-z_\\d#@']"
 
-words_to_remove <- c("government", "South Africa", "national",
-                     "country", "south", "africa", "honourable", 
-                     "people")
+#words_to_remove <- c("government", "South Africa", "national",
+#                     "country", "south", "africa", "honourable", 
+#                     "people")
 
 # sona_speeches <- 
 
 speech_tokens <- sona %>%
-  unnest_tokens(word, speech, token = "regex", pattern = unnest_reg) %>%
-  anti_join(stop_words)# %>%
+  unnest_tokens(word, speech, token = "sentences", pattern = unnest_reg) # %>%
+  # anti_join(stop_words)# %>%
   # filter(!word %in% words_to_remove)
 
 
@@ -132,25 +137,7 @@ speech_tokens <- sona %>%
 #  filter(!word %in% words_to_remove)
 
 
-load("dsfi-lexicons.Rdata")
-```
-
-```{r}
-speech_tokens %>%
-  group_by(word) %>%
-  count() %>%
-  ungroup() %>% 
-  arrange(desc(n)) %>%
-  filter(rank(desc(n)) <= 10)
-```
-
-```{r}
-word_bag <- speech_tokens %>%
-  group_by(word) %>%
-  count() %>%
-  ungroup() %>%
-  top_n(200, wt = n) %>%
-  select(-n)
+# load("dsfi-lexicons.Rdata")
 ```
 
 ```{r}
@@ -163,10 +150,9 @@ sona_features <- as.matrix(sona[,c('speech', 'date')])
 dtm <- DocumentTermMatrix(Corpus(VectorSource(sona$word)))
 tfidf <- weightTfIdf(dtm)
 tfidf_matrix <- as.matrix(tfidf)
+```
 
-# Assign labels as integers
-sona$leader <- as.integer(factor(sona$President))-1
-
+```{r data_split}
 # Split the data into training and test sets
 set.seed(1991)
 sample_size <- floor(0.8 * nrow(sona))
@@ -186,6 +172,9 @@ test_indices <- validation_indices[sample(1:length(validation_indices), 0.5 * le
 training_set <- sona[training_indices, ]
 validation_set <- sona[validation_indices, ]
 test_set <- sona[test_indices, ]
+```
+
+```{r}
 
 
 
