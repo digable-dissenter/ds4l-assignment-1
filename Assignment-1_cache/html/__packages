@@ -1,0 +1,15 @@
+ggplot2
+lattice
+caret
+dplyr
+lubridate
+keras
+NLP
+tm
+quarto
+readr
+stringr
+tensorflow
+tidyr
+tidytext
+tfhub

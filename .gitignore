@@ -4,7 +4,17 @@
 *.txt
 *.docx
 *.gitignore
+*.rdb
+*.rdx
+*.png
+*.zip
+draft_code.Rmd
 uct_logo.png
-.Rproj.user
+*.Rproj.user
+.Rhistory
+GradientBoosts.RData
+RandomForests.RData
 
+/data
 /.quarto/
+/.Rproj.user

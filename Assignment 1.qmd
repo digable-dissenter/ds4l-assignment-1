@@ -3,29 +3,39 @@ title: "Predict the President (Neural Networks)"
 author: "Kenneth Ssekimpi"
 student_number: "SSKKEN001"
 assignment: "Assignment 1"
-format: html
 editor: visual
 embed-resources: true
-fonts: Times New Roman
 bibliography: references.bib
-execute:
-  echo: false
+format: 
+  html:
+    toc: true
+execute: 
   warning: false
+  echo: false
+  cache: true
+metadata:
+  link-citations: true
+  date-format: long
+  lang: en
 ---
 
-```{r setup, include=FALSE}
-
+```{r}
+#| label: setup
+#| include: false
 knitr::opts_knit$set(root.dir = "C:/Users/User/OneDrive/Documents/School/2023/Masters/STA5073Z/Assignments/Assignment 1/ds4l-assignment-1/")
 
 knitr::opts_chunk$set(fig.pos = "H", out.extra = "")
 ```
 
-```{r libraries}
+```{r}
+#| label: libraries
+#| message: false
+
 # Clear global environment
 rm(list=ls())
 
 # Libraries we need
-libs <- c('dplyr', 'ggplot2', 'lubridate', 'keras', 'tm', 'quarto', 'readr', 'stringr', 'tidytext', 'tfhub')
+libs <- c('caret', 'dplyr', 'ggplot2', 'lubridate', 'keras', 'tm', 'quarto', 'readr', 'stringr', 'tensorflow', 'tidyr', 'tidytext', 'tfhub')
 
 # Install missing libraries
 installed_libs <- libs %in% rownames(installed.packages())
@@ -36,54 +46,115 @@ if (any(installed_libs == FALSE)) {
 # Load libraries
 invisible(lapply(libs, library, character.only = TRUE))
 
-use_virtualenv("myenv", required = TRUE) 
+use_virtualenv("r-tensorflow", required = TRUE) 
 ```
 
 ```{r}
+#| label: unzip
+
+# Unzip for file contents and add to new directory
 unzip("sona-addresses-1994-2023.zip", exdir = "data")
 ```
 
 # Abstract
 
+This is a concise summary of our paper...
+
+**Keywords**: bag-of-words, feed-forward, neural networks, random forest, classification, sona, gradient-boosted trees, south africa
+
 # Introduction
 
-The State of the Nation Address (SONA) of the President of South Africa is an annual event in which the President reports on the status of the nation to a joint sitting of Parliament. SONA speeches are an important source of information on the South African government's priorities, challenges, and plans.
+The State of the Nation Address (SONA) delivered annually by the President of South Africa stands as a critical event in the nation's political landscape. The address, traditionally presented to a joint sitting of Parliament, serves as a platform for the President to provide an extensive account of the nation's status, articulate government policies and priorities, and outline a vision for the future. The speeches delivered during SONA ceremonies offer a vital archive of insights into the governance of South Africa, spanning from its triumphant post-apartheid era in 1994 to the present day.
 
-In this paper, we conduct a
+Of particular significance is the observation that in the years coinciding with national elections, the SOAN unfolds twice: once before the election and again after it. This unique occurrence reflects the dynamism of South African politics and governance, encapsulating the nation's evolving concerns and priorities.
 
-Our work contributes to the understanding of the South African government's priorities, challenges, and plans over time. It also provides insights into the public discourse on these issues.
+Within this intricate and nuanced context, our research endeavours to understake a multifaceted exploration. We have been granted access to an extensive compendium of SONA speeches, sourced from the official government repository, covering the years 1994 to 2023. Our overarching objective is to construct a series of predictive machine learning models, each designed to analyze a given sentence of text and, through their learned patterns, attribute it to the respective President who delivered it.
 
-```{r read_wrangle}
+This academic pursuit embodies an investigation into the trajectory of leadership and governance in South Africa. The predictive models decode the unique traits and qualities of each President, providing insights into public discourse as well as offering a lens through which to observe the South African government's priorities, challenges, and plans over time.
+
+# Literature Review
+
+...
+
+# Data and Methodology
+
+The full text of SONA speeches, from 1994 to 2023, was collected from the official South African Governement website. Data preprocessing is an essential phase in text analysis, aimed at transforming the raw text data into a structured format suitable for in-depth analysis of the speeches. For this we chose the \'tidytext\' package found in R programming language which provided a versatile platform for text analysis.
+
+This research paper outlines the systematic approach taken to explore different data representations, predictive methodologies, and training/testing techniques. The primary objective is to investigate and determine the most effective strategies for the classification of presidential speeches using machine learning models.
+
+## Data Representation
+
+### *Bag of Words vs. TF-IDF*
+
+In the initial stages of our research, we considered two fundamental text representation methods: Bag of Words (BoW) and Term Frequency-Inverse Document Frequency (TF-IDF). The choice between these approaches was crucial as they have different characteristics. BoW represents text documents as a matrix of word counts, while TF-IDF assigns weights to words based on their importance in a document relative to a corpus. We experimentally evaluated both methods to determine which one would be more suitable for our predictive task.
+
+### *Selection of Top Words*
+
+Another critical consideration was the selection of the most relevant words for our predictive model. We experimented with different word count thresholds, such as the top 100 and top 200 words. This allowed us to assess how the choice of the number of words would impact the model's performance.
+
+## Predictive Approaches
+
+### *Choice of Predictive Models*
+
+To explore various predictive methodologies, we considered multiple machine learning models, including Random Forest, Gradient Boosting, and Neural Networks. Each of these models offers distinct strengths and weaknesses for tect classification tasks, and we sought to identify which one would yield the best results for our specific problem.
+
+## Training and Testing Strategies
+
+### *Cross-Validation Techniques*
+
+In the process of evaluating predictive models, we employed cross-validation as an integral part of our training and testing approach. We opted for a 5-fold cross-validation strategy to ensure robust model assessment. We also implemented stratified sampling to ensure that each fold contained representative samples from each class of presidential speeches.
+
+### *Hyperparameter Tuning*
+
+For models that require hyperparameters, such as Random Forest and Gradient Boosting, we conducted hyperparameter tuning experiments. Grid search was employed to explore different hyperparameter combinations and select the optimal settings.
+
+### *Training and Testing Split*
+
+The dataset was divided into separate training and testing sets to assess the model's generalization ability. The split ratio was 80% for training and 20% for testing, following best practices for machine learning model evaluation.
+
+## Experimental Results
+
+### *Performance Metrics*
+
+To evaluate the performance of each combination of data representation, predictive approach, and training/testing strategy, we employed standard classification performance metrics, such as accuracy, precision, recall, and F1-score. These metrics provided insights into the model's ability to correctly classify presidential speeches based on their authors.
+
+```{r}
+#| label: read_wrangle
+#| warning: false
+
 # Get a list of all text files in the directory
 text_files <- list.files(path = "data", pattern = ".txt")
 
 # Initialize an empty list to store the data
 speech_data <- c()
 i = 0
+# Predefined number of characters in each speech
 num_chars <- c(27050, 12786, 39019, 39524, 37489, 45247, 34674, 41225, 37552, 41719, 50544, 58284, 34590, 39232, 54635, 48643, 48641, 44907, 31101, 47157, 26384, 33281, 33376, 36006, 29403, 36233, 32860, 32464, 35981, 33290, 42112, 56960, 47910, 43352, 52972, 60000)
 
 # Loop through the list of text files and read them into R
 for (file in text_files) {
   i = i + 1
-  # speech <- readLines(file, warn = FALSE)
+
   # Open the file for reading
   file_handle <- file(paste("data/", file, sep = ""), "r")
   speech <- readChar(file_handle, nchars = 60000)
-  # speech_data[[file]] <- speech
+  # Store the speech data in the speech_data list
   speech_data[i] <- speech
   # Close the file
   close(file_handle)
 }
 
+# Create a data frame with filenames and speech data
 sona <- data.frame(filename = text_files, speech = speech_data, stringsAsFactors = FALSE)
 
 # extract year and president for each speech
 sona$year <- str_sub(sona$filename, start = 1, end = 4)
 sona$president <- str_remove_all(str_extract(sona$filename, "[dA-Z].*\\."), "\\.")
 
-# clean the sona dataset by adding the date and removing unnecessary text
+# Define a regular expression for text cleaning
 replace_reg <- '(http.*?(\\s|.$))|(www.*?(\\s|.$))|&amp;|&lt;|&gt;|\n'
 
+# Clean the speech data
 sona <-sona %>%
   mutate(speech = str_replace_all(speech, replace_reg , ' ')
          ,date = str_sub(speech, start=1, end=30)
@@ -101,130 +172,342 @@ sona <-sona %>%
          ,date = str_replace_all(date, '--', '')
   )
 
+# Manually correct the date for the 36th speech
 sona$date[36] <- "09-02-2023"
 sona$year[36] <- "2023"
 
+# Convert the date column to a date format
 sona$date <- dmy(sona$date)
 ```
 
-```{r preprocess}
-sona <- sona %>%
-  select(date, speech, year, president)
+```{r}
+#| label: bag_of_words
+#| message: false
 
- 
-ggplot(sona, aes(x = date, fill = president)) +
-  geom_histogram(position = "identity", bins = 20, show.legend = FALSE)  
+# Select and rename columns for the bag-of-words representation
+sona <- sona %>%
+  select(date, speech, year, president) %>%
+  rename(President = president)
 
 # Assign labels as integers
-sona$prez_encoded <- as.integer(factor(sona$president))-1
+sona$prez_encoded <- as.integer(factor(sona$President))-1
 
+# Define a regular expression for text tokenization
 unnest_reg <- "[^A-Za-z_\\d#@']"
 
-#words_to_remove <- c("government", "South Africa", "national",
-#                     "country", "south", "africa", "honourable", 
-#                     "people")
+# Tokenize the text into sentences
+tidy_sentences <- sona %>%
+  mutate(speech, speech = str_replace_all(speech, "’", "'")) %>%  
+  mutate(speech = str_replace_all(speech, replace_reg, '')) %>%            
+  unnest_tokens(sentence, speech, token = 'sentences') %>%
+  filter(str_detect(sentence, '[a-z]')) %>%
+  mutate(sentID = row_number())
 
-# sona_speeches <- 
+# Tokenize sentences into words
+tidy_words<- tidy_sentences %>%
+  mutate(sentence, sentence = str_replace_all(sentence, "’", "'")) %>%  
+  mutate(sentence = str_replace_all(sentence, replace_reg, '')) %>%         
+  unnest_tokens(word, sentence, token = 'words') %>%
+  filter(str_detect(word, '[a-z]')) %>% 
+  filter(!word %in% stop_words$word)
 
-speech_tokens <- sona %>%
-  unnest_tokens(word, speech, token = "sentences", pattern = unnest_reg) # %>%
-  # anti_join(stop_words)# %>%
-  # filter(!word %in% words_to_remove)
+# Reproducibility
+set.seed(1991)
 
+# Create a bag-of-words representation
+speech_word_bag <- tidy_words %>%
+  count(word) %>%
+  top_n(200, wt = n) %>%
+  select(-n) # Select the top 200 words based on word frequency
 
+# Join the bag-of-words with the text data
+speech_tdf <- tidy_words %>%
+  inner_join(speech_word_bag) %>%
+  group_by(sentID, President, word) %>%
+  count() %>%
+  mutate(total = sum(n)) %>%
+  ungroup()
 
-#speech_tokens <- speech_tokens %>%
-#  filter(!word %in% words_to_remove)
+# Create a wide format bag-of-words data frame
+bag_of_words <- speech_tdf %>% 
+  select(sentID, President, word, n) %>% 
+  pivot_wider(names_from = word, values_from = n, values_fill = 0, names_repair = "unique")
 
+bag_of_words
+```
 
-# load("dsfi-lexicons.Rdata")
+# Results
+
+```{r}
+#| label: feed_fwd_NN
+
+# Assign labels as integers
+bag_of_words$prez_encoded <- as.integer(factor(bag_of_words$President))-1
+
+# Reproducibility
+set.seed(1991)
+
+# Define the sample size for the training data
+sample_size <- floor(0.8 * nrow(bag_of_words))
+
+# Randomly select indices for the training data
+train_indices <- sample(seq_len(nrow(bag_of_words)), size = sample_size)
+
+# Create training and test datasets based on the selected indices
+train_data <-bag_of_words[train_indices, ]
+test_data <- bag_of_words[-train_indices, ]
+
+# Create bag-of-words matrices for the training and test data
+max_words <- ncol(bag_of_words)
+x_train_bag<- as.matrix(train_data[, 3:(max_words-1)]) # Extract the bag-of-words columns
+x_test_bag <- as.matrix(test_data[, 3:(max_words-1)])
+
+# Encode the labels (presidents) using one-hot encoding for the training and test data
+y_train_bag <- to_categorical(train_data$prez_encoded, 
+                              num_classes =length(unique(bag_of_words$prez_encoded)))
+y_test_bag <- to_categorical(test_data$prez_encoded,
+                             num_classes =length(unique(bag_of_words$prez_encoded)))
+
+# Reproducibility
+set.seed(1991)
+# Build a neural network model using the Keras library
+model <- keras_model_sequential()
+
+model %>%
+  layer_dense(units = 8, activation = 'relu', input_shape = c(max_words-3)) %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = max(train_data$prez_encoded) + 1, activation = 'softmax')
+
+# Compile the model, specifying the loss function, optimizer, and evaluation metrics
+model %>% 
+  compile(
+  loss = 'categorical_crossentropy',
+  optimizer = 'adam',
+  metrics = 'accuracy'
+)
+
+# Train the model on the training data
+train_history <- model %>% 
+  fit(
+    x_train_bag, y_train_bag, 
+    epochs = 30, 
+    validation_split = 0.2, shuffle = TRUE
+  )
+# Plot the training history (loss and accuracy)
+plot(train_history)
+
+# Evaluate the model on the test data
+results_nn_bag <- model %>%
+  evaluate(x_test_bag, y_test_bag, batch_size=128, verbose = 2)
 ```
 
 ```{r}
-# Split the dataset into three subsets: training, validation, and test
-set.seed(1991)
+#| label: word_embedding
 
-sona_features <- as.matrix(sona[,c('speech', 'date')])
+# Select a subset of training data based on President labels
+training_ids <- bag_of_words %>% 
+  group_by(President) %>% 
+  slice_sample(prop = 0.7) %>% 
+  ungroup() %>%
+  select(sentID)
 
-# Create a document-term matrix (DTM) and convert it to a TF-IDF representation
-dtm <- DocumentTermMatrix(Corpus(VectorSource(sona$word)))
-tfidf <- weightTfIdf(dtm)
-tfidf_matrix <- as.matrix(tfidf)
-```
+# Define the maximum number of features (words) to consider
+max_features <- 10000        
 
-```{r data_split}
-# Split the data into training and test sets
-set.seed(1991)
-sample_size <- floor(0.8 * nrow(sona))
-train_indices <- sample(seq_len(nrow(sona)), size = sample_size)
+# Initialize a text tokenizer
+tokenizer <- text_tokenizer(num_words = max_features)
 
-x_train <- tfidf_matrix[train_indices, ]
-x_test <- tfidf_matrix[-train_indices, ]
+# Fit the tokenizer on the sentences from tidy_sentences
+fit_text_tokenizer(tokenizer, tidy_sentences$sentence)
 
-y_train <- to_categorical(sona$leader[train_indices], num_classes = max(sona$leader)+1)
-y_test <- to_categorical(sona$leader[-train_indices], num_classes = max(sona$leader)+1)
+# Convert text sequences to numerical sequences using the tokenizer
+sequences <- tokenizer$texts_to_sequences(tidy_sentences$sentence)
 
-training_indices <- sample(1:nrow(sona), 0.8 * nrow(sona), replace = FALSE)
-validation_indices <- setdiff(1:nrow(sona), training_indices)
-test_indices <- validation_indices[sample(1:length(validation_indices), 0.5 * length(validation_indices), replace = FALSE)]
+# Encode the labels as integers
+tidy_sentences$prez_encoded <- as.integer(factor(tidy_sentences$President))
 
-# Create the training, validation, and test datasets
-training_set <- sona[training_indices, ]
-validation_set <- sona[validation_indices, ]
-test_set <- sona[test_indices, ]
+# Convert labels to integers and subtract 1
+y <- as.integer(tidy_sentences$prez_encoded)-1
+
+# Identify training rows based on the selected training IDs
+training_rows <- which(tidy_sentences$sentID %in% training_ids$sentID)
+
+# Create training datasets
+train <- list()
+train$x <- sequences[training_rows]
+train$y <- y[training_rows]
+train$y <- to_categorical(train$y,  num_classes = length(unique(tidy_sentences$prez_encoded)))
+
+# Create and test datasets
+test <- list()
+test$x <-  sequences[-training_rows]
+test$y <-  y[-training_rows]
+test$y<- to_categorical(test$y,  num_classes = length(unique(tidy_sentences$prez_encoded)))
+
+# Define the maximum sequence length
+maxlen <- 32 
+
+# Pad the sequences to a fixed length
+x_train <- train$x %>% 
+  pad_sequences(maxlen = maxlen)
+x_test <- test$x %>% 
+  pad_sequences(maxlen = maxlen)
+
+# Build a neural network model with word embeddings
+model <- keras_model_sequential() %>% 
+  layer_embedding(max_features, output_dim = 10, input_length = maxlen) %>%
+  layer_dropout(0.2) %>%
+  layer_flatten() %>%
+  layer_dense(32, activation = "relu") %>%
+  layer_dense(units = 6, activation = "softmax")
+
+# Compile the model, specifying loss, optimizer, and evaluation metric
+model %>% compile(
+  loss = "categorical_crossentropy",
+  optimizer = "adam",
+  metrics = "accuracy"
+)
+
+# Train the model on the training data
+train_history <- model %>%
+  fit(x_train, train$y, epochs = 10, verbose = 0)
+
+# Plot the training history (loss and accuracy)
+plot(train_history)
+
+# Evaluate the model on the test data
+results_nn_emb <- model %>% evaluate(x_test, test$y, batch_size = 64, verbose = 2)
 ```
 
 ```{r}
+#| label: cnn
 
+# Create a sequential neural network model
+model <- keras_model_sequential() %>% 
+  # Add an embedding layer for word embeddings
+  layer_embedding(max_features, output_dim = 10, input_length = maxlen) %>%
+  # Apply dropout for regularization
+  layer_dropout(0.2) %>%
+  # Add a 1D convolutional layer with 64 filters, a kernel size of 8, and ReLU activation
+  layer_conv_1d(filters = 64, kernel_size = 8, activation = "relu") %>%
+  # Apply 1D max-pooling with a pool size of 2
+  layer_max_pooling_1d(pool_size = 2) %>%
+  # Flatten the data
+  layer_flatten() %>%
+  # Flatten the data
+  layer_dense(32, activation = "relu") %>%
+  # Output layer with 6 units and softmax activation for classification
+  layer_dense(units = 6, activation = "softmax")
 
+# Compile the model, specifying loss, optimizer, and evaluation metric
+model %>% compile(
+  loss = "categorical_crossentropy",
+  optimizer = "adam",
+  metrics = "accuracy"
+)
 
-# # Calculate the accuracy of the classifier on the validation set
-# validation_accuracy <- mean(predicted_labels == validation_set$president)
-# 
-# # Calculate the precision of the classifier on the validation set
-# validation_precision <- mean(predicted_labels[predicted_labels == 1] == validation_set$president[predicted_labels == 1])
-# 
-# # Calculate the recall of the classifier on the validation set
-# validation_recall <- mean(predicted_labels[predicted_labels == validation_set$president] == 1)
-# 
-# # Calculate the F1 score of the classifier on the validation set
-# validation_f1_score <- 2 * (validation_precision * validation_recall) / (validation_precision + validation_recall)
+# Train the model on the training data
+train_history <- model %>%
+  fit(x_train, train$y, batch_size = 64, epochs = 10, verbose = 0)
 
+# Plot the training history (loss and accuracy)
+plot(train_history)
 
+# Evaluate the model on the test data
+results_cnn <- model %>% evaluate(x_test, test$y, batch_size = 64, verbose = 2)
+
+results
 ```
 
-# Predict the President (Neural Networks)
+```{r}
+#| label: random_forest
 
-## Abstract
+#load(file = 'RandomForests.RData')
+# Reproducibility
+#set.seed(1991)
 
-This is a concise summary of our paper...
+# Convert the "prez_encoded" column in the training and test datasets to factors
+#train_data$prez_encoded<-as.factor(train_data$prez_encoded)
+#test_data$prez_encoded<- as.factor(test_data$prez_encoded)
 
-## Keywords
+# Define a grid of hyperparameters for Random Forest
+#ctrl <- trainControl(method = 'cv', number = 5, verboseIter = T)
+# Grid of hyperparameter values for "mtry"
+#randomForest_grid <- expand.grid(mtry = c(10, 20, 30))
 
-## Introduction
+# Perform a grid search for the Random Forest model
+#randomForest_gridsearch <- train(prez_encoded ~ ., data = train_data[, -(1:2)], 
+#                        method = 'rf', 
+#                        trControl = ctrl, 
+#                        verbose = F, 
+#                        tuneGrid = randomForest_grid)
+# The code above trains multiple Random Forest models with different "mtry"
 
-This section provides more detailed background information on our topic...
+# rf_pred <- predict(randomForest_gridsearch, newdata = test_data[,-(1:2)]) 
+#save(randomForest_gridsearch, file = 'Random Forest Model.RData')
 
-## Literature review
+# Create a confusion matrix for evaluating the model's performance
+#rf_confusion<- confusionMatrix(rf_pred, test_data$prez_encoded) #First predicted, then truth
+#rf_confusion
+```
 
-...
+```{r}
+#| label: gbm
+#load(file = "GradientBoosts.RData")
 
-## Data and methods
+# Reproducibility
+#set.seed(1991)
 
-This section describes how we conducted our study...
+# Define the control settings for cross-validation
+#ctrl <- trainControl(method = 'cv', number = 5, verboseIter = T)
 
-## Results
+# Define a grid of hyperparameters for GBM
+#gbm_grid <- expand.grid(n.trees = c(100),
+#                        interaction.depth = c(1, 2, 6),
+#                        shrinkage = c(0.01, 0.005, 0.001),
+#                        n.minobsinnode = 1)
 
-This sections presents the results of our study...
+# Perform a grid search for the GBM model
+#gbm_gridsearch <- train(prez_encoded ~ ., data = train_data[, -(1:2)], 
+#                        method = 'gbm', 
+#                        trControl = ctrl, 
+#                        verbose = F, 
+#                        tuneGrid = gbm_grid)
+# The code above trains multiple GBM models with different hyperparameter values and selects the best one based on cross-validation results.
 
-## Discussion
+
+# save(gbm_gridsearch, file = "GradientBoosts.RData")
+# load(file = "GradientBoosts.RData")
+# Plot the results of the grid search (parameter tuning)
+#plot(gbm_gridsearch)
+
+## Prediction
+# Make predictions on the test data using the selected GBM model
+#gbm_pred <- predict(gbm_gridsearch,test_data[,-(1:2)])
+
+# Create a confusion matrix for evaluating the model's performance
+#confusionMatrix(gbm_pred, test_data$prez_encoded)
+```
+
+## Conclusions and Recommendations
+
+The experimental results demonstrated that the choice of data representaion, predictive approach, and training/testing strategy significantly influenced the performance of the predictive models. Our findings revealed that the TF-IDF representation outperformed the BoW representation, and the top 200 words provided better results than the top 100 words. Additionally, Gradient Boosting was identified as the most effective predictive model for this task.
+
+```{}
+```
+
+# Discussion & Conclusion
+
+## Implications
+
+The choice of data representation, predictive approach, and training/testing methodology is crucial in determining the success of a machine learning task. Our research underscores the importance of systematically exploring these aspects to optimize model performance.
+
+## Future Work
+
+Future research can delve deeper into fine-tuning hyperparameters and exploring more advanced natural language processing techniques, such as word embeddings. Additionally, investigating the impact of feature engineering and ensemble methods could lead to further improvements in predictive accuracy.
+
+In summary, this research paper highlights the importance of carefully selecting aspects of the problem/data to optimize predictive models. By systematically experimenting with various data representations, predictive approaches, and training/testing strategies, we can make informed decisions that ultimately lead to improved predicitive accuracy and model robustness.
 
 This section interprets our results and discusses their implications...
 
-## Conclusion
-
-This section summarizes the main findings of our study and states the conclusions that can be drawn from the data...
-
-## References
-
-This section lists all of the sources that we cited in our paper...
+This section also summarizes the main findings of our study and states the conclusions that can be drawn from the data...
