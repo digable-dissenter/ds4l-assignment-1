@@ -8,7 +8,6 @@
 *.rdx
 *.png
 *.zip
-draft_code.Rmd
 uct_logo.png
 *.Rproj.user
 .Rhistory
