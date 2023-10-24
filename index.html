@@ -3291,7 +3291,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 </ol>
 <p><strong>Mathematical Formulation</strong>:</p>
 <p><span class="math display">\[w_{ij}^{(l)} \leftarrow w_{ij}^{(l)} - \alpha \frac{\partial J}{\partial w_{ij}^{(l)}}\]</span></p>
-<p>where <span class="math inline">\(w_{ij}^{(l)}\)</span> denotes the weight of the connection between neuron <span class="math inline">\(i\)</span> in layer <span class="math inline">\(l\)</span> and neuron <span class="math inline">\(j\)</span> in layer <span class="math inline">\(l+1\)</span>, and <span class="math inline">\(\alpha\)</span> represents the learning rate. <span class="math inline">\(\frac{\partial J}{\partial w_{ij}^{(l)}}\)</span> denotes the partial derivative of the cost function <span class="math inline">\(J\)</span> with respect to the weight <span class="math inline">\(w_{ij}^{(l)}\)</span> **[<span class="citation" data-cites="*"></span>*fath2020].</p>
+<p>where <span class="math inline">\(w_{ij}^{(l)}\)</span> denotes the weight of the connection between neuron <span class="math inline">\(i\)</span> in layer <span class="math inline">\(l\)</span> and neuron <span class="math inline">\(j\)</span> in layer <span class="math inline">\(l+1\)</span>, and <span class="math inline">\(\alpha\)</span> represents the learning rate. <span class="math inline">\(\frac{\partial J}{\partial w_{ij}^{(l)}}\)</span> denotes the partial derivative of the cost function <span class="math inline">\(J\)</span> with respect to the weight <span class="math inline">\(w_{ij}^{(l)}\)</span> **<span class="citation" data-cites="*"></span>.</p>
 <p><strong>Strengths of Feed-Forward Neural Networks</strong>:</p>
 <ul>
 <li>They excel in capturing non-linear relationships between input and output variables <span class="citation" data-cites="bebis1994">(<a href="#ref-bebis1994" role="doc-biblioref">Bebis and Georgiopoulos 1994</a>)</span>.</li>
@@ -3304,7 +3304,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 </ul>
 <p><strong>Common Uses</strong>:</p>
 <ul>
-<li>Feed-Forward Neural Networks are widely utilized in classification tasks, including image classification, text classification, and sentiment analysis <span class="citation" data-cites="despotovic2017">(<a href="#ref-despotovic2017" role="doc-biblioref"><span>“Sentiment Analysis of Microblogs Using Multilayer Feed-Forward Artificial Neural Networks”</span> 2017</a>)</span>.</li>
+<li>Feed-Forward Neural Networks are widely utilized in classification tasks, including image classification, text classification, and sentiment analysis <span class="citation" data-cites="despotovic2017">(<a href="#ref-despotovic2017" role="doc-biblioref">Despotovic and Tanikic 2017</a>)</span>.</li>
 </ul>
 </section>
 <section id="convolutional-neural-networks" class="level3">
@@ -3670,7 +3670,7 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 <li>Both models struggle with Class 0 (President De Klerk) and Class 3 (President Mothlanthe), as evidenced by low sensitivity, precision, and recall.</li>
 <li>Class 2 (President Mbeki) is relatively better identified by both models, with higher sensitivity, precision, and recall.</li>
 <li>The Gradient Boosted Trees model tends to have lower sensitivity and precision for most classes compared to the Random Forest model.</li>
-<li>Both models exhibit difficulties in identifying text segments from President De Klerk (Class 0) and President Mothlanthe (Class 3), which suggests that the nature of the imbalanced dataset (each had one speech, with de Klerk’s been markedly shorter than Mothlanthe’s) may have contributed to the models’ poor performance. It is well known [<span class="citation" data-cites="ganganwar2012">Ganganwar (<a href="#ref-ganganwar2012" role="doc-biblioref">2012</a>)</span>] that classification algorithms perform better with more balanced data.</li>
+<li>Both models exhibit difficulties in identifying text segments from President De Klerk (Class 0) and President Mothlanthe (Class 3), which suggests that the nature of the imbalanced dataset (each had one speech, with de Klerk’s been markedly shorter than Mothlanthe’s) may have contributed to the models’ poor performance. It is well known <span class="citation" data-cites="ganganwar2012">(<a href="#ref-ganganwar2012" role="doc-biblioref">Ganganwar 2012</a>)</span> that classification algorithms perform better with more balanced data.</li>
 </ul>
 </section>
 </section>
@@ -3713,6 +3713,9 @@ Craja, Patricia, Alisa Kim, and Stefan Lessmann. 2020. <span>“Deep Learning fo
 <div id="ref-delip2019" class="csl-entry" role="listitem">
 Delip, Rao, and Brian McMahan. 2019. <em>Natural Language Processing with PyTorch: Build Intelligent Language Applications Using Deep Learning</em>. O’Reilly Media Inc.
 </div>
+<div id="ref-despotovic2017" class="csl-entry" role="listitem">
+Despotovic, Vladimir, and Dejan Tanikic. 2017. <span>“Sentiment Analysis of Microblogs Using Multilayer Feed-Forward Artificial Neural Networks.”</span> <em>Computing and Informatics</em> 36: 1127–42.
+</div>
 <div id="ref-fath2020" class="csl-entry" role="listitem">
 Fath, Aref Hashemi, Farshid Madanifar, and Masood Abbasi. 2020. <span>“Implementation of Multilayer Perceptron (MLP) and Radial Basis Function (RBF) Neural Networks to Predict Solution Gas-Oil Ratio of Crude Oil Systems.”</span> <em>Petroleum</em> 6: 80–91.
 </div>
@@ -3739,9 +3742,6 @@ Mata, Diogo Baptista Martins da. 2022. <span>“Biomedical Multimodal Explanatio
 </div>
 <div id="ref-oyewola2023" class="csl-entry" role="listitem">
 Oyewola, Oladimeji, David Opeoluwa, Sowore Olatunji Julius, Lummo Bala Kachalla, and Emmanuel Gbenga Dada. 2023. <span>“Optimizing Sentiment Analysis of Nigerian 2023 Presidential Election Using Two-Stage Residual Long Short Term Memory.”</span> <em>Heliyon</em> 9: 1–24. https://doi.org/<a href="https://doi.org/10.1016/j.heliyon.2023.e14836">https://doi.org/10.1016/j.heliyon.2023.e14836</a>.
-</div>
-<div id="ref-despotovic2017" class="csl-entry" role="listitem">
-<span>“Sentiment Analysis of Microblogs Using Multilayer Feed-Forward Artificial Neural Networks.”</span> 2017. <em>Computing and Informatics</em> 36: 1127–42.
 </div>
 <div id="ref-sagov" class="csl-entry" role="listitem">
 <span>“State of the Nation Address.”</span> n.d. <a href="https://www.gov.za/state-nation-address">https://www.gov.za/state-nation-address</a>.

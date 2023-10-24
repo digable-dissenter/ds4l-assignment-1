@@ -179,7 +179,7 @@ In the context of our research, the Feed-Forward Neural Network pieces together 
 
 $$w_{ij}^{(l)} \leftarrow w_{ij}^{(l)} - \alpha \frac{\partial J}{\partial w_{ij}^{(l)}}$$
 
-where $w_{ij}^{(l)}$ denotes the weight of the connection between neuron $i$ in layer $l$ and neuron $j$ in layer $l+1$, and $\alpha$ represents the learning rate. $\frac{\partial J}{\partial w_{ij}^{(l)}}$ denotes the partial derivative of the cost function $J$ with respect to the weight $w_{ij}^{(l)}$ **\[@**fath2020\].
+where $w_{ij}^{(l)}$ denotes the weight of the connection between neuron $i$ in layer $l$ and neuron $j$ in layer $l+1$, and $\alpha$ represents the learning rate. $\frac{\partial J}{\partial w_{ij}^{(l)}}$ denotes the partial derivative of the cost function $J$ with respect to the weight $w_{ij}^{(l)}$ \*\*[@*\*fath2020].
 
 **Strengths of Feed-Forward Neural Networks**:
 
@@ -401,16 +401,16 @@ bag_of_words <- speech_tdf %>%
 
 To evaluate the performance of each combination of data representation, predictive approach, and training/testing strategy, we employed standard classification performance metrics, such as accuracy, precision, recall, and F1-score. These metrics provided insights into the model's ability to correctly classify presidential speeches based on their authors.
 
-1.  **Feed Forward Neural Network** (*Bag-of-Words*): \
-    **Loss**: The loss, indicated as 1.3170, represents the measure of dissimilarity between the model's predictions and the actual target values \[\@mathieu2015\]. In this context, lower values are favorable, suggesting that the model is adept at making more accurate predictions. \
+1.  **Feed Forward Neural Network** (*Bag-of-Words*):\
+    **Loss**: The loss, indicated as 1.3170, represents the measure of dissimilarity between the model's predictions and the actual target values \[\@mathieu2015\]. In this context, lower values are favorable, suggesting that the model is adept at making more accurate predictions.\
     **Accuracy**: The accuracy, noted as 0.4212, specifies the proportion of correct predictions made by the model [@james2017]. In this case, the model's performance appears to be around 42.12%, implying that it correctly classifies the data in roughly 42.12% of cases.
 
-2.  **Feed-Forward Neural Network** (*Word Embeddings*): \
-    **Loss**: The loss, marked as 1.6867, showcases a slightly higher value compared to the Bag-of-Words model. This implies that the model using word embeddings has somewhat more dissimilarity between its predictions and the actual values. \
+2.  **Feed-Forward Neural Network** (*Word Embeddings*):\
+    **Loss**: The loss, marked as 1.6867, showcases a slightly higher value compared to the Bag-of-Words model. This implies that the model using word embeddings has somewhat more dissimilarity between its predictions and the actual values.\
     **Accuracy**: The accuracy, denoted as 0.4962, demonstrates an improved performance, with the model correctly classifying the data in approximately 49.62% of cases.
 
-3.  **Convolutional Neural Network**: \
-    **Loss**: The loss, registered as 1.7796, reflects a somewhat higher value compared to the previous two models, indicating a greater divergence between predictions and actual values. \
+3.  **Convolutional Neural Network**:\
+    **Loss**: The loss, registered as 1.7796, reflects a somewhat higher value compared to the previous two models, indicating a greater divergence between predictions and actual values.\
     **Accuracy**: The accuracy, specified as 0.5073, demonstrates an improved performance over the previous two models, with the model correctly classifying the data in approximately 50.73% of cases.
 
 In summary, the three neural network architectures exhibit varying degrees of performance on the given task. The Feed-Forward Neural Network with Word Embeddings outperformed the Bag-of-Words variant, as indicated by higher accuracy but a slightly higher loss. Meanwhile, the Convolutional Neural Network, achieved the best accuracy, but demonstrated a marginally higher loss. These results provide valuable insights into the models' performance, allowing for a comparison of their effectiveness in the specific task at hand.
@@ -640,8 +640,6 @@ gbm_metrics <- list(gbm_gridsearch, gbm_pred, gbm_conf)
 #| label: random_forest
 #| message: false
 
-load(file = 'RandomForests.RData')
-
 # Reproducibility
 set.seed(1991)
 
@@ -746,9 +744,8 @@ Shown in @tbl-gbm-metrics.
 
 -   **Sensitivity** (*True Positive Rate*): In this case, Class 2 (Mbeki) has the highest sensitivity, indicating that the Gradient Boosted Trees model is relatively better at identifying text segments from President Mbeki.
 
-```{=html}
 <!-- -->
-```
+
 -   **Specificity** (*True Negative Rate*): The model exhibits high specificity for most classes, particularly for Class 5 (Ramaphosa), showing that it can correctly classify non-Ramaphosa segments.
 
 -   **Precision**: Precision varies across classes, with Class 4 (Zuma) having relatively high precision, while Class 0 has very low precision, indicating that the model struggles to make correct positive predictions for President De Klerk.
@@ -762,7 +759,7 @@ Shown in @tbl-gbm-metrics.
 -   Both models struggle with Class 0 (President De Klerk) and Class 3 (President Mothlanthe), as evidenced by low sensitivity, precision, and recall.
 -   Class 2 (President Mbeki) is relatively better identified by both models, with higher sensitivity, precision, and recall.
 -   The Gradient Boosted Trees model tends to have lower sensitivity and precision for most classes compared to the Random Forest model.
--   Both models exhibit difficulties in identifying text segments from President De Klerk (Class 0) and President Mothlanthe (Class 3), which suggests that the nature of the imbalanced dataset (each had one speech, with de Klerk's been markedly shorter than Mothlanthe's) may have contributed to the models' poor performance. It is well known \[@ganganwar2012\] that classification algorithms perform better with more balanced data.
+-   Both models exhibit difficulties in identifying text segments from President De Klerk (Class 0) and President Mothlanthe (Class 3), which suggests that the nature of the imbalanced dataset (each had one speech, with de Klerk's been markedly shorter than Mothlanthe's) may have contributed to the models' poor performance. It is well known [@ganganwar2012] that classification algorithms perform better with more balanced data.
 
 ## Conclusions and Recommendations
 
@@ -774,8 +771,7 @@ These findings offer valuable insights into model strengths and weaknesses and c
 
 ## Implications
 
-Our study underscores the pivotal role of data representation, predictive approach, and training/testing methodology in the success of machine learning tasks, particularly in dealing with imbalanced data,
-emphasizing the need for a systematic exploration of these facets to optimize model performance.
+Our study underscores the pivotal role of data representation, predictive approach, and training/testing methodology in the success of machine learning tasks, particularly in dealing with imbalanced data, emphasizing the need for a systematic exploration of these facets to optimize model performance.
 
 ## Future Work
 
